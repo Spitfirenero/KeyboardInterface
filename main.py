@@ -1,12 +1,19 @@
 import sys
+import threading
 from struct import *
 from PySide6.QtCore import Slot, Qt
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton, QTextEdit
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QWidget, QPushButton, QTextEdit
 from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 
-from keyboardListenerModual import KeyboardListener
+from QKeyboardListener import QKeyboardListener
+from QKeycodesConverter import QKeycodesConverter
+from QKeyboardEditableGUI import QKeyboardEditableGUI, RoundedSquareItem
 
-DEFAULT_WINDOW_SIZE = (650, 500)
+from pynput import keyboard
+
+DEFAULT_WINDOW_SIZE = (350, 550)
+
+CONSOLE_MAX_SIZE = 120
 
 MAX_CONNECTION_ATTEMPTS = 5
 
@@ -15,7 +22,7 @@ ARDUINO_MICRO_PRODUCT_ID = 32823
 
 DEFAULT_KEYBOARD_LAYOUT = [135, 177, 212, 109, 121, 178, 218, 216, 217, 215]
 
-class KeyboardInterface(QMainWindow):
+class QKeyboardInterface(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -23,13 +30,26 @@ class KeyboardInterface(QMainWindow):
         self.currentLayout = DEFAULT_KEYBOARD_LAYOUT
         self.connectionAttempts = 0
 
+        # Create the keyboard listener
+        self.listener = QKeyboardListener()
+        self.listener.keyPressed.connect(self.onKeyPressed)
+        self.listenerThread = threading.Thread(target=self.listener.run, daemon=True)
+        self.listenerThread.start()
+
         self.setWindowTitle("Keyboard Interface")
         # Increase Window Size
         self.resize(DEFAULT_WINDOW_SIZE[0], DEFAULT_WINDOW_SIZE[1])
         self.layout = QVBoxLayout()
+        self.listenerLayout = QHBoxLayout()
         self.central_widget = QWidget(self)
         self.central_widget.setLayout(self.layout)
         self.setCentralWidget(self.central_widget)
+
+        # Keyboard Layout   
+        self.keyboardLayout = QKeyboardEditableGUI()
+        self.keyboardLayout.addKeyboard(5, 50)
+        self.keyboardLayout.scene.clicked.connect(self.onGUIPressed)
+        self.layout.addWidget(self.keyboardLayout)
                 
         # Connected Device Name
         self.connected_device_name = QLabel(self)
@@ -51,26 +71,27 @@ class KeyboardInterface(QMainWindow):
         self.keyboardLayout.setText("Keyboard Layout: " + str(self.currentLayout))
         self.layout.addWidget(self.keyboardLayout)
 
+        self.layout.addLayout(self.listenerLayout)
+
+        # Input Field
+        self.listenerInput = QLineEdit()
+        self.listenerLayout.addWidget(self.listenerInput)
+
         # Keyboard Listener
         self.keyboardListener = QPushButton("Start Keyboard Listener", self)
         self.keyboardListener.clicked.connect(self.startListener)
-        self.layout.addWidget(self.keyboardListener)
+        self.listenerLayout.addWidget(self.keyboardListener)
 
         # Console
         self.console = QTextEdit(self)
         self.console.setReadOnly(True)
+        self.console.setMaximumHeight(CONSOLE_MAX_SIZE)
         self.layout.addWidget(self.console)
 
         self.connect()
     
     def startListener(self) -> None:
-        listener = KeyboardListener()
-        listener.keyPressed.connect(self.onKeyPressed)
-        listener.start()
-
-    @Slot(int)
-    def onKeyPressed(self, key: int) -> None:
-        print(key)
+        self.listener.start()
 
     def attemptConnect(self) -> None:
         while not self.arduino.open(QSerialPort.ReadWrite) and self.connectionAttempts <= MAX_CONNECTION_ATTEMPTS:
@@ -81,7 +102,6 @@ class KeyboardInterface(QMainWindow):
             self.console.append("Max Connection Attempts Reached, Make Sure Arduino Micro is Plugged In")
 
         self.connectionAttempts = 0
-        
 
     def connect(self) -> None:
         ports = QSerialPortInfo.availablePorts()
@@ -102,6 +122,19 @@ class KeyboardInterface(QMainWindow):
             break
         else:
             self.console.append("Could not find Arduino Micro")
+
+    @Slot(RoundedSquareItem)
+    def onGUIPressed(self, key):
+        key.text.setPlainText('Right\nWindows')
+        key.update()
+
+    @Slot(keyboard.Key)
+    def onKeyPressed(self, key: keyboard.Key) -> None:
+        arduinoKey = QKeycodesConverter.convertToArduino(key)
+        labelKey = QKeycodesConverter.convertToLabel(arduinoKey)
+        self.listenerInput.setText(labelKey)
+        self.console.append("Key Pressed: " + labelKey)
+        self.listener.pause()
 
     @Slot()
     def download(self) -> None:
@@ -144,8 +177,12 @@ class KeyboardInterface(QMainWindow):
         else:
             self.console.append("Upload Failed Due to Serial Error, Try Again")
 
+    def closeEvent(self, event) -> None:
+        super().closeEvent(event)
+        self.listener.stop()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = KeyboardInterface()
+    window = QKeyboardInterface()
     window.show()
     sys.exit(app.exec())
