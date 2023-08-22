@@ -1,5 +1,5 @@
 from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
-from typing import Optional
+
 
 class MacroMapperSerial:
 
