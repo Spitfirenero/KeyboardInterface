@@ -3,33 +3,29 @@ from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 
 class MacroMapperSerial:
 
-    __serialPortInfo: QSerialPortInfo
-    __serialPort: QSerialPort
+    __serialPort: QSerialPort = None
 
     __downloadCommand = b'D'
     __uploadCommand = b'U'
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__serialPort = QSerialPort()
-
-    def scanSerialPorts(self, vendorID: int, productID: int) -> None:
-        availablePorts = QSerialPortInfo.availablePorts()
-        for port in availablePorts:
-            if port.vendorIdentifier() == vendorID and port.productIdentifier() == productID:
-                self.__serialPortInfo = port
     
-    def connectToSerial(self) -> bool:
-        if self.__serialPortInfo == None:
-            return False
-        
-        self.__serialPort.setPort(self.__serialPortInfo)
-        self.__serialPort.setBaudRate(QSerialPort.Baud9600)
-        self.__serialPort.setDataBits(QSerialPort.Data8)
-        self.__serialPort.setParity(QSerialPort.NoParity)
-        self.__serialPort.setStopBits(QSerialPort.OneStop)
-        self.__serialPort.setFlowControl(QSerialPort.NoFlowControl)
+    def connectToSerial(self, vendorID: int, productID: int) -> bool:        
+        availablePorts = QSerialPortInfo.availablePorts()
+        for portInfo in availablePorts:
+            if not portInfo.vendorIdentifier() == vendorID and not portInfo.productIdentifier() == productID:
+                continue
+            
+            self.__serialPort.setPort(portInfo)
+            self.__serialPort.setBaudRate(QSerialPort.Baud9600)
+            self.__serialPort.setDataBits(QSerialPort.Data8)
+            self.__serialPort.setParity(QSerialPort.NoParity)
+            self.__serialPort.setStopBits(QSerialPort.OneStop)
+            self.__serialPort.setFlowControl(QSerialPort.NoFlowControl)
 
-        return True
+            return True
+        return False
     
     def download(self) -> list:
         if not self.__serialPort.open(QSerialPort.ReadWrite):

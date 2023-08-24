@@ -4,9 +4,10 @@ from struct import *
 from typing import Optional
 from PySide6.QtCore import Slot, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QWidget, QPushButton, QTextEdit
-from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 
 from MacroMapperSerial import MacroMapperSerial
+from MacroMapperKeyGraphScene import MacroMapperKeyGraphScene
+from MacroMapperKeyGraphItem import MacroMapperKeyGraphItem
 
 DEFAULT_WINDOW_SIZE = (300, 550)
 
@@ -27,8 +28,7 @@ class MacroMapper(QMainWindow):
 
         # Setup External Packages
         self.serialConnection = MacroMapperSerial()
-        self.serialConnection.scanSerialPorts(ARDUINO_MICRO_VENDOR_ID, ARDUINO_MICRO_PRODUCT_ID)
-        self.serialConnection.connectToSerial()
+        self.serialConnection.connectToSerial(ARDUINO_MICRO_VENDOR_ID, ARDUINO_MICRO_PRODUCT_ID)
 
         # Setup Window defaults
         self.setWindowTitle("Macro Mapper")
@@ -38,6 +38,16 @@ class MacroMapper(QMainWindow):
         self.centralWidget.setLayout(self.mainlayout)
         self.setCentralWidget(self.centralWidget)
 
+        # Setup the keyboard layout
+        self.keyboardLayout = MacroMapperKeyGraphScene()
+        self.keyboardLayout.addKeyboard(5, 50)
+
+        self.keyboardLayout.clicked.connect(self.onKeyGraphyPressed)
+        self.mainlayout.addWidget(self.keyboardLayout.getView())
+
+    @Slot(MacroMapperKeyGraphItem)
+    def onKeyGraphyPressed(self, item: MacroMapperKeyGraphItem) -> None:
+        print(item)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
