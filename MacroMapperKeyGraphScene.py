@@ -9,8 +9,9 @@ class MacroMapperKeyGraphScene(QGraphicsScene):
     
         clicked = Signal(MacroMapperKeyGraphItem)
 
-        __index: list = None
-        __view: QGraphicsView = None
+        __index: list
+        __view: QGraphicsView
+        __currentlySelected: MacroMapperKeyGraphItem = None
     
         def __init__(self):
             super().__init__()
@@ -33,6 +34,20 @@ class MacroMapperKeyGraphScene(QGraphicsScene):
                     key = MacroMapperKeyGraphItem((j * (size + offset), i * (size + offset) + verticalOffset), (size, size))
                     self.__index.append(key)
                     self.addItem(key)
+
+        def mousePressEvent(self, event):
+            super().mousePressEvent(event)
+
+            for item in self.items():
+                if not item.boundingRect().contains(event.scenePos()):
+                    continue
+
+                if self.__currentlySelected is not None:
+                    self.__currentlySelected.setSelected(False)
+
+                self.clicked.emit(item)
+                item.setSelected(True)
+                self.__currentlySelected = item
 
         def getView(self) -> QGraphicsView:
             return self.__view

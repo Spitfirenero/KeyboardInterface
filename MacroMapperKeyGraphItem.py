@@ -5,15 +5,19 @@ from PySide6.QtGui import QPainter, QFont, QColor
 
 class MacroMapperKeyGraphItem(QGraphicsItem):
     
-    __text: QGraphicsTextItem = None
-    __rect: QRectF = None
+    __text: QGraphicsTextItem
+    __rect: QRectF
 
+    __defaultColor: QColor = QColor('#404040')
+    __selectedColor: QColor = QColor('#303030')
+
+    __currentColor: QColor = __defaultColor
 
     def __init__(self, pos: tuple, size: tuple) -> None:
         super().__init__()
 
         self.__rect = QRectF(pos[0], pos[1], size[0], size[1])
-        self.__text = QGraphicsTextItem()
+        self.__text = QGraphicsTextItem("", self)
 
         self.formatText()
 
@@ -30,15 +34,14 @@ class MacroMapperKeyGraphItem(QGraphicsItem):
 
     def setText(self, text: str) -> None:
         self.__text.setPlainText(text)
+        self.update()
 
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
-        super().mousePressEvent(event)
-
-        self.__text.setDefaultTextColor(Qt.red)
-        self.scene().clicked.emit(self)
+    def setSelected(self, selected: bool) -> None:
+        self.__currentColor = self.__selectedColor if selected else self.__defaultColor
+        self.update()
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = ...) -> None:
-        painter.setBrush(QColor('#404040'))
+        painter.setBrush(self.__currentColor)
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(self.__rect, 5, 5)
 
