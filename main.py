@@ -34,6 +34,7 @@ class MacroMapper(QMainWindow):
         self.setWindowTitle("Macro Mapper")
         self.resize(DEFAULT_WINDOW_SIZE[0], DEFAULT_WINDOW_SIZE[1])
         self.mainlayout = QVBoxLayout()
+        self.mainlayout.setContentsMargins(0, 0, 0, 0)
         self.centralWidget = QWidget(self)
         self.centralWidget.setLayout(self.mainlayout)
         self.setCentralWidget(self.centralWidget)

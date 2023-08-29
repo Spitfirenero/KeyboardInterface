@@ -49,5 +49,7 @@ class MacroMapperKeyGraphScene(QGraphicsScene):
                 item.setSelected(True)
                 self.__currentlySelected = item
 
+                break
+
         def getView(self) -> QGraphicsView:
             return self.__view
