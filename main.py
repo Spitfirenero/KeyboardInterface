@@ -47,7 +47,7 @@ class MacroMapper(QMainWindow):
 
     @Slot(MacroMapperKeyGraphItem)
     def onKeyGraphyPressed(self, item: MacroMapperKeyGraphItem) -> None:
-        item.setText("hello!")
+        item.setText("Windows\nKey")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

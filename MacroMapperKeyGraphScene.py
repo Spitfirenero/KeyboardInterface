@@ -38,16 +38,16 @@ class MacroMapperKeyGraphScene(QGraphicsScene):
         def mousePressEvent(self, event):
             super().mousePressEvent(event)
 
-            for item in self.items():
+            for item in self.__index:
                 if not item.boundingRect().contains(event.scenePos()):
                     continue
 
                 if self.__currentlySelected is not None:
                     self.__currentlySelected.setSelected(False)
 
-                self.clicked.emit(item)
-                item.setSelected(True)
                 self.__currentlySelected = item
-
+                self.__currentlySelected.setSelected(True)
+                self.clicked.emit(self.__currentlySelected)
+                
         def getView(self) -> QGraphicsView:
             return self.__view

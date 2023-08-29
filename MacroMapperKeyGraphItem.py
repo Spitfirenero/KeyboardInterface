@@ -42,7 +42,6 @@ class MacroMapperKeyGraphItem(QGraphicsItem):
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = ...) -> None:
         painter.setBrush(self.__currentColor)
-        painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(self.__rect, 5, 5)
 
     def boundingRect(self) -> QRectF:
