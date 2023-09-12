@@ -43,11 +43,25 @@ class MacroMapper(QMainWindow):
         self.keyboardLayout = MacroMapperKeyGraphScene()
         self.keyboardLayout.addKeyboard(5, 50)
 
-        self.keyboardLayout.clicked.connect(self.onKeyGraphyPressed)
+        self.keyboardLayout.selected.connect(self.onKeyGraphPressed)
         self.mainlayout.addWidget(self.keyboardLayout.getView())
 
+        self.horizontalLayout = QHBoxLayout()
+        self.mainlayout.addLayout(self.horizontalLayout)
+
+        self.textInput = QLineEdit()
+        self.horizontalLayout.addWidget(self.textInput)
+
+        self.listenButton = QPushButton("Listen")
+        self.listenButton.clicked.connect(self.onListenButtonPressed)
+        self.horizontalLayout.addWidget(self.listenButton)
+
+    @Slot()
+    def onListenButtonPressed(self) -> None:
+        pass
+
     @Slot(MacroMapperKeyGraphItem)
-    def onKeyGraphyPressed(self, item: MacroMapperKeyGraphItem) -> None:
+    def onKeyGraphPressed(self, item: MacroMapperKeyGraphItem) -> None:
         item.setText("Windows\nKey")
 
 if __name__ == "__main__":
