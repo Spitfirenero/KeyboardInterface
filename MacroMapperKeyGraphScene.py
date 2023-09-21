@@ -3,13 +3,10 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QPainter
 
 from MacroMapperKeyGraphItem import MacroMapperKeyGraphItem
+from MacroMapperSignalSlots import ConnectionManager, Signal, Slot
 
 
 class MacroMapperKeyGraphScene(QGraphicsScene):
-    
-        selected = Signal(MacroMapperKeyGraphItem)
-        deselected = Signal()
-
         __index: list
         __view: QGraphicsView
         
@@ -34,24 +31,11 @@ class MacroMapperKeyGraphScene(QGraphicsScene):
                         continue
 
                     key = MacroMapperKeyGraphItem((j * (size + offset), i * (size + offset) + verticalOffset), (size, size))
-                    self.__index.append(key)
+                    ConnectionManager().connect("clicked", self.keyPressed)
                     self.addItem(key)
 
-        # def mousePressEvent(self, event):
-        #     super().mousePressEvent(event)
-
-        #     for item in self.__index:
-        #         if not item.boundingRect().contains(event.scenePos()):
-        #             pass
-
-        #         if self.__currentlySelected is not None:
-        #             self.__currentlySelected.setSelected(False)
-
-        #         self.__currentlySelected = item
-        #         self.__currentlySelected.setSelected(True)
-        #         self.selected.emit(self.__currentlySelected)
-        #     else:
-        #         self.__currentlySelected.setSelected(False)
+        def keyPressed(self, key: MacroMapperKeyGraphItem):
+             pass
 
         def getView(self) -> QGraphicsView:
             return self.__view

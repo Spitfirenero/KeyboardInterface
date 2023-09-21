@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QH
 from MacroMapperSerial import MacroMapperSerial
 from MacroMapperKeyGraphScene import MacroMapperKeyGraphScene
 from MacroMapperKeyGraphItem import MacroMapperKeyGraphItem
+from MacroMapperSignalSlots import ConnectionManager, Signal, Slot
 
 DEFAULT_WINDOW_SIZE = (300, 550)
 
@@ -43,7 +44,7 @@ class MacroMapper(QMainWindow):
         self.keyboardLayout = MacroMapperKeyGraphScene()
         self.keyboardLayout.addKeyboard(5, 50)
 
-        self.keyboardLayout.selected.connect(self.onKeyGraphPressed)
+        ConnectionManager().connect("clicked", self.onKeyGraphPressed)
         self.mainlayout.addWidget(self.keyboardLayout.getView())
 
         self.horizontalLayout = QHBoxLayout()
@@ -69,5 +70,3 @@ if __name__ == "__main__":
     window = MacroMapper()
     window.show()
     sys.exit(app.exec())
-
-        
